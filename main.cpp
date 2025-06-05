@@ -1,6 +1,5 @@
-﻿#include "DataStream.hpp"
+﻿#include "StreamBuffer.hpp"
 #include <iostream>
-#include <vector>
 
 enum class EM_TEST :int16_t
 {
@@ -9,7 +8,7 @@ enum class EM_TEST :int16_t
 	TYPE_3
 };
 
-struct Mydata
+struct Mydata// :public mmrUtil::IDealByStream<std::string>
 {
 	Mydata() = default;
 	Mydata(std::string str1, int n, float f, std::string str2, EM_TEST emTest)
@@ -19,7 +18,6 @@ struct Mydata
 		, strValue2(std::move(str2))
 		, emTest(emTest)
 	{
-		
 	}
 
 	std::string strValue1;
@@ -28,8 +26,7 @@ struct Mydata
 	std::string strValue2;
 	EM_TEST emTest;
 
-	template<template <typename...> class _DataStream,typename... Args>
-	void marshal(_DataStream<Args...>& dataStream) const
+	void marshal(mmrUtil::StreamBuffer& dataStream) const
 	{
 		dataStream << strValue1;
 		dataStream << nValue;
@@ -38,8 +35,7 @@ struct Mydata
 		dataStream << emTest;
 	}
 
-	template<template <typename...> class _DataStream, typename... Args>
-	void unmarshal(_DataStream<Args...>& dataStream)
+	void unmarshal(mmrUtil::StreamBuffer& dataStream)
 	{
 		dataStream >> strValue1;
 		dataStream >> nValue;
@@ -51,22 +47,22 @@ struct Mydata
 
 int main()
 {	//复制数据到byte
-	char transData[1024] = {0};
+	char transData[1024] = { 0 };
 	int byteLen = 0;
 	//数据序列化二进制保存
 	{
-		mmrUtil::DataStream<std::string> dataMarshal(mmrUtil::emEndian::BIG/*二进制数据为大端模式*/);
+		mmrUtil::StreamBuffer dataMarshal;
 		Mydata dataTest = { "你好",5,2.5,"hello" ,EM_TEST::TYPE_2 };
 		std::cout << "origin data is " << dataTest.strValue1 << " " << dataTest.nValue << " " << dataTest.fValue << " " << dataTest.strValue2 << " " << static_cast<int>(static_cast<int16_t>(dataTest.emTest)) << std::endl;
 		dataTest.marshal(dataMarshal);
-		byteLen = dataMarshal.size();
-		memcpy(transData, &dataMarshal[0], byteLen);
+		byteLen = dataMarshal.dataSize();
+		memcpy(transData, dataMarshal.getStartPtr(), byteLen);
 	}
 
 	//反序列化
 	{
 		//使用vector<char类型>
-		mmrUtil::DataStream<std::vector<char>> dataUnmarshal(transData, byteLen, mmrUtil::emEndian::BIG);
+		mmrUtil::StreamBuffer dataUnmarshal(transData, byteLen);
 
 		Mydata dataTrans;
 		dataTrans.unmarshal(dataUnmarshal);

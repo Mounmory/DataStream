@@ -2,6 +2,7 @@ DataStream 类 / DataStream Class
 -------
 
 #### 0 概述 / Overview
+
 - `DataStream` 类可将C++基本数据类型和自定义类型转换为二进制数据，便于网络传输和存储。相比JSON/XML等通用格式，具有以下特点：
   - 转换速度更快
   - 支持类型更丰富

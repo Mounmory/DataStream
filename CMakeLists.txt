@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
 # 设置项目名称
-project(mmrDataStream)
+project(mmrStreamBuffer)
 
 if(WIN32)
 	message("platform windows")
